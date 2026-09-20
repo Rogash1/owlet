@@ -134,8 +134,8 @@ class OwletBinarySensor(OwletBaseEntity, BinarySensorEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        return super().available and (
-            not self.sock.properties["charging"]
+        return super().available and self.sock.properties.get(self.entity_description.key) is not None and (
+            self.sock.properties.get("charging") is False
             or self.entity_description.available_during_charging
         )
 
@@ -143,7 +143,7 @@ class OwletBinarySensor(OwletBaseEntity, BinarySensorEntity):
     def is_on(self) -> bool:
         """Return true if the binary sensor is on."""
 
-        return self.sock.properties[self.entity_description.key]
+        return self.sock.properties.get(self.entity_description.key)
 
 
 class OwletAwakeSensor(OwletBinarySensor):
@@ -166,4 +166,5 @@ class OwletAwakeSensor(OwletBinarySensor):
     @property
     def is_on(self) -> bool:
         """Return true if the binary sensor is on."""
-        return self.sock.properties[self.entity_description.key] not in [8, 15]
+        value = self.sock.properties.get(self.entity_description.key)
+        return None if value is None else value not in [8, 15]

@@ -1,0 +1,19 @@
+Owlet Smart Sock integration
+Original work by Ryan Clark and upstream contributors, Apache License 2.0.
+The upstream LICENSE is retained.
+
+Maintenance changes adapt:
+- soschlegel/owlet a6ffd6ef2b: modern options flow, current API exceptions,
+  options reload and user-facing errors/translations.
+- mLupine/owlet f31a548d6e / 2f68ea0c88: region-qualified account identity;
+  adapted with collision/malformed/future-version guards and no identity logs.
+- gitcak/owlet e0e0a04fa6: correct auth failure handling, polling fallback,
+  removal of invented hardware revision and spelling corrections.
+- talmg/owlet ab6601ce4a: diagnostic vitals timestamp; adapted to the API's
+  timezone-aware ISO timestamp and conservative timestamp-based availability.
+- bgunner1987/owlet: API transport and token-persistence design leads;
+  transport is implemented in the separate API library, not duplicated here.
+
+All source revisions and remaining dispositions are recorded in the sibling
+project-notes/changes.md audit ledger. Local maintenance modifications are not
+an upstream release and have not been verified on hardware.

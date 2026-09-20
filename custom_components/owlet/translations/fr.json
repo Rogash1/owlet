@@ -17,9 +17,8 @@
         },
         "error": {
             "cannot_connect": "N'a pas réussi à se connecter",
-            "invalid_email": "L'adresse e-mail saisie est incorrecte",
-            "invalid_password": "Le mot de passe saisi est incorrect",
             "invalid_credentials": "Les informations d'identification saisies sont incorrectes",
+            "no_devices": "Aucun appareil Owlet trouvé sur ce compte",
             "unknown": "Une erreur inconnue est survenue"
         },
         "abort": {

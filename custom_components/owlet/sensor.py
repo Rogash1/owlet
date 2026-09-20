@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -13,6 +14,7 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
+    EntityCategory,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     UnitOfTemperature,
     UnitOfTime,
@@ -129,6 +131,9 @@ async def async_setup_entry(
         ):
             sensors.append(OwletOxygenAverageSensor(coordinator))
 
+        if coordinator.sock.version == 3:
+            sensors.append(OwletLastUpdatedSensor(coordinator))
+
     async_add_entities(sensors)
 
 
@@ -148,8 +153,8 @@ class OwletSensor(OwletBaseEntity, SensorEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        return super().available and (
-            not self.sock.properties["charging"]
+        return super().available and self.sock.properties.get(self.entity_description.key) is not None and (
+            self.sock.properties.get("charging") is False
             or self.entity_description.available_during_charging
         )
 
@@ -157,7 +162,7 @@ class OwletSensor(OwletBaseEntity, SensorEntity):
     def native_value(self) -> StateType:
         """Return sensor value."""
 
-        return self.sock.properties[self.entity_description.key]
+        return self.sock.properties.get(self.entity_description.key)
 
 
 class OwletSleepSensor(OwletSensor):
@@ -181,7 +186,7 @@ class OwletSleepSensor(OwletSensor):
     @property
     def native_value(self) -> StateType:
         """Return sensor value."""
-        return SLEEP_STATES[self.sock.properties["sleep_state"]]
+        return SLEEP_STATES.get(self.sock.properties.get("sleep_state"), "unknown")
 
 
 class OwletOxygenAverageSensor(OwletSensor):
@@ -209,7 +214,7 @@ class OwletOxygenAverageSensor(OwletSensor):
         return (
             super().available
             and (
-                not self.sock.properties["charging"]
+                self.sock.properties.get("charging") is False
                 or self.entity_description.available_during_charging
             )
             and (
@@ -217,3 +222,25 @@ class OwletOxygenAverageSensor(OwletSensor):
                 and self.sock.properties["oxygen_10_av"] <= 100
             )
         )
+
+
+class OwletLastUpdatedSensor(OwletSensor):
+    """Cloud snapshot timestamp, also available when the snapshot is stale."""
+
+    entity_description = OwletSensorEntityDescription(
+        key="last_updated", translation_key="lastupdated",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        available_during_charging=True,
+    )
+
+    def __init__(self, coordinator):
+        super().__init__(coordinator, self.entity_description)
+
+    @property
+    def native_value(self):
+        try:
+            value = datetime.fromisoformat(self.sock.properties["last_updated"])
+            return value if value.tzinfo is not None else None
+        except (KeyError, TypeError, ValueError):
+            return None

@@ -12,12 +12,11 @@ from pyowletapi.exceptions import (
 from pyowletapi.sock import Sock
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_EMAIL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN
+from .const import DOMAIN, POLLING_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,7 +32,8 @@ class OwletCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=interval),
+            update_interval=timedelta(seconds=max(5, interval or POLLING_INTERVAL)),
+            config_entry=entry,
         )
         self.sock = sock
         self.config_entry: ConfigEntry = entry
@@ -41,15 +41,14 @@ class OwletCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> None:
         """Fetch the data from the device."""
         try:
-            properties = await self.sock.update_properties()
-            if "tokens" in properties:
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data={**self.config_entry.data, **properties["tokens"]},
-                )
+            await self.sock.update_properties()
         except OwletAuthenticationError as err:
-            raise ConfigEntryAuthFailed(
-                f"Authentication failed for {self.config_entry.data[CONF_EMAIL]}"
-            ) from err
-        except (OwletError, OwletConnectionError) as err:
-            raise UpdateFailed(err) from err
+            raise ConfigEntryAuthFailed("Owlet authentication failed") from err
+        except OwletError as err:
+            raise UpdateFailed("Unable to retrieve Owlet data") from err
+        finally:
+            tokens = self.sock.api.tokens
+            if any(self.config_entry.data.get(key) != value for key, value in tokens.items()):
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry, data={**self.config_entry.data, **tokens}
+                )
