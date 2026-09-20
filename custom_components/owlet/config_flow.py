@@ -83,6 +83,7 @@ class OwletConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     title=user_input[CONF_USERNAME],
                     data={
                         CONF_REGION: user_input[CONF_REGION],
+                        "entity_namespace": user_input[CONF_REGION],
                         CONF_USERNAME: user_input[CONF_USERNAME],
                         **token,
                     },

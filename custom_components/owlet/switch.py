@@ -69,7 +69,7 @@ class OwletBaseSwitch(OwletBaseEntity, SwitchEntity):
         """Initialize owlet switch platform."""
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{self.sock.serial}-{description.key}"
+        self._attr_unique_id = self.entity_unique_id(description.key)
         self._attr_is_on = False
 
     @property

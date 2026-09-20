@@ -25,6 +25,15 @@ class OwletBaseEntity(CoordinatorEntity[OwletCoordinator], Entity):
         self.sock = coordinator.sock
 
     @property
+    def device_identifier(self) -> str:
+        """New entries are region-scoped; legacy registries retain their IDs."""
+        namespace = self.coordinator.config_entry.data.get("entity_namespace")
+        return f"{namespace}_{self.sock.serial}" if namespace else self.sock.serial
+
+    def entity_unique_id(self, key: str) -> str:
+        return f"{self.device_identifier}-{key}"
+
+    @property
     def available(self) -> bool:
         """Require timestamp evidence for timestamped v3 measurements."""
         if not super().available:
@@ -49,7 +58,7 @@ class OwletBaseEntity(CoordinatorEntity[OwletCoordinator], Entity):
     def device_info(self) -> DeviceInfo:
         """Return the device info of the device."""
         return DeviceInfo(
-            identifiers={(DOMAIN, self.sock.serial)},
+            identifiers={(DOMAIN, self.device_identifier)},
             name=f"Owlet Sock {self.sock.serial}",
             connections={("mac", self.sock.mac)} if self.sock.mac else set(),
             suggested_area="Nursery",

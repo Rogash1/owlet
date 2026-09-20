@@ -123,16 +123,20 @@ async def test_user_flow_region_and_api_candidate(hass):
         await hass.async_block_till_done()
 
 
-async def test_setup_unload_real_sock_and_entities(hass):
+@pytest.mark.parametrize("device_count", [1, 2])
+async def test_setup_unload_real_sock_and_entities(hass, device_count):
     obj=entry(hass,version=2)
     raw={'REAL_TIME_VITALS':{'name':'REAL_TIME_VITALS','value':json.dumps({'hr':120,'ox':98,'bat':80,'chg':0,'bso':True,'ss':1}),
         'data_updated_at':datetime.now(timezone.utc).isoformat()}}
-    with patch.object(OwletAPI,'get_devices',new=AsyncMock(return_value={'response':[{'device':{'dsn':'synthetic-device'}}]})), \
+    with patch.object(OwletAPI,'get_devices',new=AsyncMock(return_value={'response':[{'device':{'dsn':f'synthetic-device-{n}'}} for n in range(device_count)]})), \
          patch.object(OwletAPI,'get_properties',new=AsyncMock(return_value={'response':raw})):
         assert await hass.config_entries.async_setup(obj.entry_id)
         await hass.async_block_till_done()
         assert obj.state==ConfigEntryState.LOADED
-        assert any(state.state=='120.0' for state in hass.states.async_all('sensor'))
+        assert sum(state.state=='120.0' for state in hass.states.async_all('sensor'))==device_count
+        assert await hass.config_entries.async_reload(obj.entry_id)
+        await hass.async_block_till_done()
+        assert len(hass.data['owlet'][obj.entry_id])==device_count
         assert await hass.config_entries.async_unload(obj.entry_id)
         assert obj.entry_id not in hass.data['owlet']
 
@@ -197,3 +201,19 @@ async def test_manifest_matches_installed_candidate():
     from pathlib import Path
     manifest=json.loads((Path(__file__).parents[1]/'custom_components/owlet/manifest.json').read_text())
     assert manifest['requirements']==['pyowletapi=='+version('pyowletapi')]
+
+
+async def test_region_entity_namespace_preserves_legacy(hass):
+    description=next(s for s in SENSORS if s.key=='heart_rate')
+    def sensor(region, namespace=None):
+        data={'region':region}
+        if namespace:
+            data['entity_namespace']=namespace
+        obj=entry(hass,version=2,data=data,unique_id=region+'_'+str(namespace))
+        return OwletSensor(OwletCoordinator(hass,sock(),5,obj),description)
+    legacy=sensor('world')
+    world=sensor('world','world')
+    europe=sensor('europe','europe')
+    assert legacy.unique_id=='synthetic-device-heart_rate'
+    assert len({legacy.unique_id,world.unique_id,europe.unique_id})==3
+    assert world.device_info['identifiers']!=europe.device_info['identifiers']
