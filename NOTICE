@@ -9,6 +9,7 @@ Maintenance changes adapt:
   adapted with collision/malformed/future-version guards and no identity logs.
 - gitcak/owlet e0e0a04fa6: correct auth failure handling, polling fallback,
   removal of invented hardware revision and spelling corrections.
+- batas/owlet 69b8f58f23: checkout source before HACS validation.
 - talmg/owlet ab6601ce4a: diagnostic vitals timestamp; adapted to the API's
   timezone-aware ISO timestamp and conservative timestamp-based availability.
 - Jofeled/owlet 80fcea8f54: source-checkout HACS distribution while no
