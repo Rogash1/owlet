@@ -217,3 +217,65 @@ async def test_region_entity_namespace_preserves_legacy(hass):
     assert legacy.unique_id=='synthetic-device-heart_rate'
     assert len({legacy.unique_id,world.unique_id,europe.unique_id})==3
     assert world.device_info['identifiers']!=europe.device_info['identifiers']
+
+
+async def test_legacy_migration_preserves_registry_and_recorded_history(recorder_mock, hass):
+    """Migrate a synthetic production-schema entry with a renamed entity and history."""
+    from sqlalchemy import select
+    from homeassistant.components.recorder.db_schema import States, StatesMeta
+    from homeassistant.helpers import device_registry as dr, entity_registry as er
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_recorder_block_till_done, async_trigger_db_commit,
+    )
+
+    obj = entry(hass, version=1, options={'scan_interval': 30})
+    original_entry_id, original_data, original_options = obj.entry_id, dict(obj.data), dict(obj.options)
+    devices, entities = dr.async_get(hass), er.async_get(hass)
+    device = devices.async_get_or_create(config_entry_id=obj.entry_id,
+                                        identifiers={('owlet', 'synthetic-device')})
+    entity = entities.async_get_or_create('sensor', 'owlet', 'synthetic-device-heart_rate',
+                                         config_entry=obj, device_id=device.id)
+    entity = entities.async_update_entity(entity.entity_id, new_entity_id='sensor.user_chosen_pulse')
+    await hass.async_start()
+    hass.states.async_set(entity.entity_id, '111')
+    await hass.async_block_till_done()
+    async_trigger_db_commit(hass)
+    await async_recorder_block_till_done(hass)
+
+    def recorded():
+        with recorder_mock.get_session() as session:
+            return list(session.execute(select(States.state_id, States.metadata_id, States.state)
+                .join(StatesMeta, States.metadata_id == StatesMeta.metadata_id)
+                .where(StatesMeta.entity_id == entity.entity_id)))
+
+    before = await hass.async_add_executor_job(recorded)
+    assert any(row.state == '111' for row in before)
+    # A Core restart clears live states but retains registry and recorder data.
+    hass.states.async_remove(entity.entity_id)
+    raw = {'REAL_TIME_VITALS': {'name': 'REAL_TIME_VITALS',
+           'value': json.dumps({'hr': 120, 'ox': 98, 'bat': 80, 'chg': 0}),
+           'data_updated_at': datetime.now(timezone.utc).isoformat()}}
+    with patch.object(OwletAPI, 'get_devices', new=AsyncMock(return_value={
+            'response': [{'device': {'dsn': 'synthetic-device'}}]})), \
+         patch.object(OwletAPI, 'get_properties', new=AsyncMock(return_value={'response': raw})):
+        assert await hass.config_entries.async_setup(obj.entry_id)
+        await hass.async_block_till_done()
+        assert obj.version == 2 and obj.unique_id == 'world_synthetic@example.invalid'
+        assert obj.entry_id == original_entry_id
+        assert dict(obj.data) == original_data and dict(obj.options) == original_options
+        assert 'entity_namespace' not in obj.data
+        for _ in range(2):
+            current = entities.async_get(entity.entity_id)
+            assert current.id == entity.id and current.unique_id == entity.unique_id
+            assert current.device_id == device.id
+            assert ('owlet', 'synthetic-device') in devices.async_get(device.id).identifiers
+            assert hass.states.get(entity.entity_id).state == '120.0'
+            assert await hass.config_entries.async_reload(obj.entry_id)
+            await hass.async_block_till_done()
+        async_trigger_db_commit(hass)
+        await async_recorder_block_till_done(hass)
+        after = await hass.async_add_executor_job(recorded)
+        assert set(before).issubset(after)
+        assert any(row.state == '120.0' for row in after)
+        assert len({row.metadata_id for row in after}) == 1
+        assert await hass.config_entries.async_unload(obj.entry_id)
