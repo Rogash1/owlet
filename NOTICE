@@ -11,6 +11,8 @@ Maintenance changes adapt:
   removal of invented hardware revision and spelling corrections.
 - talmg/owlet ab6601ce4a: diagnostic vitals timestamp; adapted to the API's
   timezone-aware ISO timestamp and conservative timestamp-based availability.
+- Jofeled/owlet 80fcea8f54: source-checkout HACS distribution while no
+  approved release asset exists; minimum HA matches the tested baseline.
 - bgunner1987/owlet: API transport and token-persistence design leads;
   transport is implemented in the separate API library, not duplicated here.
 
