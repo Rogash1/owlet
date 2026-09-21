@@ -46,18 +46,22 @@ switches issue explicit user commands; polling never acknowledges alarms.
 
 ## Installation status and dependency
 
-Do not install this candidate into production yet. The current source manifest
-pins the locally built API version, which is **not available from upstream PyPI**;
-a normal HACS installation cannot resolve it today. HACS repository discovery
-must not be confused with a published maintained Python dependency.
+Do not install this candidate into production yet. The prepared manifest pins the
+maintained API fork's versioned HTTPS wheel URL plus SHA256. **The release asset
+is not published yet**, so neither ordinary HACS installation nor that URL is
+currently an installable release. It does not resolve through upstream PyPI.
 
-Once reviewed release assets exist, this integration will reference the API fork's
-versioned HTTPS wheel URL plus SHA256 in `custom_components/owlet/manifest.json`.
-HA loads that manifest from persistent `/config/custom_components/owlet` and
-installs requirements before integration setup. Manually injecting a wheel into
-an existing Core container is not a persistent deployment strategy. Hosting,
-restart/cache behavior and container replacement must be verified in an isolated
-HAOS instance before production use. No actual release URL is claimed available yet.
+The intended wheel is hosted under Rogash1/pyowletapi release 2026.9.20rc1; the
+exact path and digest are in `custom_components/owlet/manifest.json`. The repository
+exists and is verified; the asset URL is prepared for future publication, not
+claimed downloadable. Verify the published asset and SHA256 before installation.
+
+HA loads the manifest from persistent `/config/custom_components/owlet` and installs
+requirements before setup. Manually injecting a wheel into an existing Core
+container is not a persistent deployment strategy. Hosting, restart/cache behavior
+and container replacement must be verified in an isolated HAOS instance before
+production use. URL requirements can invoke the package manager at startup even
+when the version is installed; availability of the asset/cache matters.
 
 For an approved future isolated installation, obtain the reviewed integration
 archive from [this fork's releases](https://github.com/Rogash1/owlet/releases), verify

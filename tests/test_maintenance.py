@@ -200,7 +200,22 @@ async def test_manifest_matches_installed_candidate():
     from importlib.metadata import version
     from pathlib import Path
     manifest=json.loads((Path(__file__).parents[1]/'custom_components/owlet/manifest.json').read_text())
-    assert manifest['requirements']==['pyowletapi=='+version('pyowletapi')]
+    from packaging.requirements import Requirement
+    from urllib.parse import urlsplit, parse_qs
+    import re
+    assert len(manifest['requirements']) == 1
+    requirement = Requirement(manifest['requirements'][0])
+    installed = version('pyowletapi')
+    assert requirement.name == 'pyowletapi'
+    assert manifest['version'] == installed
+    url = urlsplit(requirement.url)
+    assert url.scheme == 'https' and url.netloc == 'github.com'
+    assert url.path == (f'/Rogash1/pyowletapi/releases/download/{installed}/'
+                        f'pyowletapi-{installed}-py3-none-any.whl')
+    assert not url.query and not url.username and not url.password
+    hashes = parse_qs(url.fragment)
+    assert set(hashes) == {'sha256'} and len(hashes['sha256']) == 1
+    assert re.fullmatch(r'[0-9a-f]{64}', hashes['sha256'][0])
 
 
 async def test_region_entity_namespace_preserves_legacy(hass):

@@ -4,6 +4,10 @@
 
 ## 2026.9.20rc1 — maintained candidate, not released
 
+- Prepare a versioned HTTPS API-wheel requirement with a SHA256 pin under the
+  maintained API fork. Release assets remain unpublished; installation is gated
+  on verifying the actual published bytes and subsequent isolated HAOS rehearsal.
+
 Independent Apache-2.0 continuation; not an upstream release or production-ready.
 
 - Adapt current options flow, API exceptions, reauth errors and options reload from
