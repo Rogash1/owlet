@@ -1,6 +1,43 @@
 # Changelog
 
 <!--next-version-placeholder-->
+
+## 2026.9.20rc1 — maintained candidate, not released
+
+Independent Apache-2.0 continuation; not an upstream release or production-ready.
+
+- Adapt current options flow, API exceptions, reauth errors and options reload from
+  [soschlegel/owlet a6ffd6ef2b](https://github.com/soschlegel/owlet/commit/a6ffd6ef2b).
+- Adapt region-qualified account identity from
+  [mLupine/owlet f31a548d6e](https://github.com/mLupine/owlet/commit/f31a548d6e) /
+  [2f68ea0c88](https://github.com/mLupine/owlet/commit/2f68ea0c88), related to
+  [upstream PR #30](https://github.com/ryanbdclark/owlet/pull/30).
+  Add collision/future-schema guards; preserve legacy device/entity IDs. Namespace
+  only newly created entries. Version-2 migration requires version-aware rollback.
+- Adapt coordinator authentication handling, polling fallback and removal of
+  invented hardware revision from
+  [gitcak/owlet e0e0a04fa6](https://github.com/gitcak/owlet/commit/e0e0a04fa6).
+- Adapt diagnostic timestamp from
+  [talmg/owlet ab6601ce4a](https://github.com/talmg/owlet/commit/ab6601ce4a), with
+  timezone-aware API output and conservative timestamp-based V3 availability.
+- Keep HTTP/authentication hardening in the separate maintained API library;
+  preserve rotating token snapshots during HA setup failures. Follow design leads
+  from bgunner1987/owlet, credited in NOTICE and the API changelog.
+- Adapt HACS source distribution from
+  [Jofeled/owlet 80fcea8f54](https://github.com/Jofeled/owlet/commit/80fcea8f54) and
+  checkout before validation from
+  [batas/owlet 69b8f58f23](https://github.com/batas/owlet/commit/69b8f58f23).
+- Add one/two-device lifecycle, migration/reauth and real registry/recorder tests.
+  22 tests pass on HA 2026.9.3 / Python 3.14.6 with the packaged API candidate.
+  This is mocked local validation, not HAOS or hardware verification.
+
+Implementation: [e378176](https://github.com/Rogash1/owlet/commit/e378176),
+[81cefce](https://github.com/Rogash1/owlet/commit/81cefce),
+[5c1de99](https://github.com/Rogash1/owlet/commit/5c1de99),
+[894266c](https://github.com/Rogash1/owlet/commit/894266c),
+[ae26738](https://github.com/Rogash1/owlet/commit/ae26738).
+Original release history follows unchanged.
+
 ## 2025.4.3 (2025-04-15)
 ### Fix
 * Changes to how the sensors are stored to solve the issue where only one device is added, thanks [`@MarjovanLier`](https://github.com/MarjovanLier). ([`1244bff`](https://github.com/ryanbdclark/owlet/commit/1244bffcb48d7337a9d7a0da518959fe4b31a230))

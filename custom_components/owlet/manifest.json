@@ -2,12 +2,12 @@
   "domain": "owlet",
   "name": "Owlet Smart Sock",
   "codeowners": [
-    "@ryanbdclark"
+    "@Rogash1"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/ryanbdclark/owlet",
+  "documentation": "https://github.com/Rogash1/owlet",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/ryanbdclark/owlet/issues",
+  "issue_tracker": "https://github.com/Rogash1/owlet/issues",
   "requirements": [
     "pyowletapi==2026.9.20rc1"
   ],

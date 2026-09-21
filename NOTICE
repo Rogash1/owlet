@@ -17,6 +17,6 @@ Maintenance changes adapt:
 - bgunner1987/owlet: API transport and token-persistence design leads;
   transport is implemented in the separate API library, not duplicated here.
 
-All source revisions and remaining dispositions are recorded in the sibling
-project-notes/changes.md audit ledger. Local maintenance modifications are not
+Source references and maintenance summaries are in CHANGELOG.md and
+SECURITY-REVIEW.md; detailed audit evidence is retained in maintainer project notes. Local maintenance modifications are not
 an upstream release and have not been verified on hardware.

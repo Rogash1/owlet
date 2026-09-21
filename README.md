@@ -1,48 +1,109 @@
-# Owlet Custom Integration
+# Owlet Home Assistant integration — maintained continuation
 
-[![GitHub Release][releases-shield]][releases]
-[![GitHub Activity][commits-shield]][commits]
+This is Rogash1's independent continuation of
+[ryanbdclark/owlet](https://github.com/ryanbdclark/owlet), preserving upstream history,
+the [Apache-2.0 license](LICENSE), [NOTICE](NOTICE) and historical changelog.
+The development branch is `maintenance/local-candidate`; candidate
+**2026.9.20rc1 is experimental, not production-ready**. It is not an upstream or
+Owlet-endorsed release. No maintained release asset has been published yet.
 
-[![License][license-shield]][license]
+The integration depends on the separately maintained
+[pyowletapi fork](https://github.com/Rogash1/pyowletapi/tree/maintenance/local-candidate).
+Authentication/HTTP/parsing belong in that library; config flows, coordinators,
+entities, migration and diagnostics belong here.
 
-[![hacs][hacsbadge]][hacs]
-[![Project Maintenance][maintenance-shield]][user_profile]
+## What changed and why
 
-A custom component for the Owlet smart sock
+- Adapt modern HA options, authentication failures and reauthentication flows.
+- Persist rotating token snapshots even if setup subsequently fails.
+- Migrate account identity to region plus normalized email with collision checks.
+  Existing entry/device/entity IDs and user renames are retained; only new entries
+  receive a regional entity namespace.
+- Load/reload/unload multiple devices correctly with the maintained API wheel.
+- Mark missing measurements unknown and stale V3 readings unavailable using
+  timestamps; identical readings alone do not mean stale data.
+- Add an allowlisted diagnostic response and a last-updated sensor; avoid raw
+  account/device responses in diagnostics and errors.
 
-## Installation
+See [CHANGELOG.md](CHANGELOG.md) for source commits/PR leads and
+[SECURITY-REVIEW.md](SECURITY-REVIEW.md) for implemented safeguards and limitations.
 
-1. Use [HACS](https://hacs.xyz/docs/use/download/download/), in `HACS > Integrations > Explore & Add Repositories` search for "Owlet".
-2. Restart Home Assistant.
-3. [![Add Integration][add-integration-badge]][add-integration] or in the HA UI go to "Settings" -> "Devices & Services" then click "+" and search for "Owlet Smart Sock".
+## Tested compatibility
 
+The installed API wheel passed **22 HA regressions** on Core **2026.9.3**, Python
+**3.14.6**, aiohttp **3.14.3** and the matching custom-component test harness.
+The earlier 21-test suite passed Core 2026.2.3 / Python 3.13.15. Metadata currently
+sets HA 2026.2.3 as the minimum; versions between these baselines are not all tested.
+API regressions separately passed 40 tests. All network responses were mocked.
 
-<!---->
+**No live HAOS or Owlet hardware validation is claimed.** WSL local tests do not
+reproduce HAOS native libraries or Core container replacement. Real token rotation,
+long polling, V2 freshness and every hardware revision remain unverified.
+The V3 threshold `max(120 seconds, 3 polling intervals)` is a conservative local
+policy, not a manufacturer guarantee. New alarm acknowledgment, body-position,
+recovery and camera features remain disabled/unimplemented. Existing base-station
+switches issue explicit user commands; polling never acknowledges alarms.
 
-## Usage
+## Installation status and dependency
 
-The `Owlet` integration offers integration with the Owlet Smart Sock cloud service. This provides sensors such as heart rate, oxygen saturation, charge percentage.
+Do not install this candidate into production yet. The current source manifest
+pins the locally built API version, which is **not available from upstream PyPI**;
+a normal HACS installation cannot resolve it today. HACS repository discovery
+must not be confused with a published maintained Python dependency.
 
-This integration provides the following entities:
+Once reviewed release assets exist, this integration will reference the API fork's
+versioned HTTPS wheel URL plus SHA256 in `custom_components/owlet/manifest.json`.
+HA loads that manifest from persistent `/config/custom_components/owlet` and
+installs requirements before integration setup. Manually injecting a wheel into
+an existing Core container is not a persistent deployment strategy. Hosting,
+restart/cache behavior and container replacement must be verified in an isolated
+HAOS instance before production use. No actual release URL is claimed available yet.
 
-- Binary sensors - charging status, high heart rate alert, low heart rate alert, high oxygen alert, low oxygen alert, low battery alert, lost power alert, sock diconnected alert, and sock status.
-- Sensors - battery level, oxygen saturation, oxygen saturation 10 minute average, heart rate, battery time remaining, signal strength, and skin temperature.
+For an approved future isolated installation, obtain the reviewed integration
+archive from [this fork's releases](https://github.com/Rogash1/owlet/releases), verify
+its checksum, place its `custom_components/owlet` directory in the test HA config,
+and restart that test instance. Add Owlet through Settings > Devices & Services
+and enter credentials locally. Do not copy production credentials into tests.
 
-## Options
+## Local tests against the packaged API
 
-- Seconds between polling - Number of seconds between each call for data from the owlet cloud service, default is 5 seconds.
+Build the companion API wheel using its README, keeping the checkouts as sibling
+`pyowletapi` and `owlet-ha` directories. From this repository:
 
----
+```sh
+uv venv .venv-target --python 3.14.6
+uv pip install --python .venv-target/bin/python -r requirements-test-target.lock
+uv pip install --python .venv-target/bin/python --no-deps ../pyowletapi/dist/pyowletapi-2026.9.20rc1-py3-none-any.whl
+PYTHONPATH=. .venv-target/bin/python -m pytest -c pytest.ini tests/test_maintenance.py -q --timeout=20
+```
 
-[commits-shield]: https://img.shields.io/github/commit-activity/w/ryanbdclark/owlet?style=for-the-badge
-[commits]: https://github.com/ryanbdclark/owlet/commits/main
-[hacs]: https://github.com/hacs/integration
-[hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
-[license]: LICENSE
-[license-shield]: https://img.shields.io/github/license/ryanbdclark/owlet.svg?style=for-the-badge
-[maintenance-shield]: https://img.shields.io/badge/maintainer-Ryan%20Clark%20%40ryanbdclark-blue.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/ryanbdclark/owlet.svg?style=for-the-badge
-[releases]: https://github.com/ryanbdclark/owlet/releases
-[user_profile]: https://github.com/ryanbdclark
-[add-integration]: https://my.home-assistant.io/redirect/config_flow_start?domain=owlet
-[add-integration-badge]: https://my.home-assistant.io/badges/config_flow_start.svg
+Review the wheel's hash against its build/release checksum before installation.
+The workspace-only requirements-local.txt records a historical local artifact
+hash; it is not a public package index configuration. Historical upstream tests
+under tests/upstream target an in-tree HA component and are excluded. No live
+credentials are required by the replacement regressions.
+
+## Migration and rollback
+
+Upgrade existing entries in place; do not delete and re-add them. Migration changes
+config-entry version 1 to 2 and account unique ID, but keeps the entry ID and
+legacy entity/device identifiers. A synthetic real-registry/recorder test verifies
+user-renamed entity IDs and old/new history continuity through two reloads.
+Invalid, colliding or future-version entries are refused rather than merged.
+
+Before any approved deployment, create and verify an encrypted pre-migration
+backup covering config entries, entity/device registries, integration files and
+recorder history (coordinate external databases separately). **Downgrading files
+alone is unsafe:** the upstream version-1 flow may reject version-2 entries.
+Rollback restores the pre-migration configuration and database together using
+supported HA backup restore, without hand-editing `.storage`. Changes/history after
+the backup are lost; rotated cloud tokens may require user-driven reauthentication.
+No production backup, restart or deployment is authorized by these instructions.
+
+## Attribution and support
+
+Ryan Clark and upstream contributors created this integration. [NOTICE](NOTICE)
+identifies adapted fork contributions; [CHANGELOG.md](CHANGELOG.md) retains prior
+releases and maintained changes. Report bugs to [this fork](https://github.com/Rogash1/owlet/issues)
+and use [SECURITY.md](SECURITY.md) for sensitive reports. This community effort is
+best-effort and is not a substitute for primary monitoring.
