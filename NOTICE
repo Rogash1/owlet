@@ -12,11 +12,9 @@ Maintenance changes adapt:
 - batas/owlet 69b8f58f23: checkout source before HACS validation.
 - talmg/owlet ab6601ce4a: diagnostic vitals timestamp; adapted to the API's
   timezone-aware ISO timestamp and conservative timestamp-based availability.
-- Jofeled/owlet 80fcea8f54: source-checkout HACS distribution while no
-  approved release asset exists; minimum HA matches the tested baseline.
+- Jofeled/owlet 80fcea8f54: source-checkout HACS distribution; minimum HA matches the tested baseline.
 - bgunner1987/owlet: API transport and token-persistence design leads;
   transport is implemented in the separate API library, not duplicated here.
 
-Source references and maintenance summaries are in CHANGELOG.md and
-SECURITY-REVIEW.md; detailed audit evidence is retained in maintainer project notes. Local maintenance modifications are not
-an upstream release and have not been verified on hardware.
+Source references are retained in CHANGELOG.md. These maintenance modifications
+are not an upstream release and have not been verified on hardware.

@@ -2,11 +2,10 @@
 
 <!--next-version-placeholder-->
 
-## 2026.9.20rc1 — maintained candidate, not released
+## 2026.9.20rc1 — experimental prerelease
 
-- Prepare a versioned HTTPS API-wheel requirement with a SHA256 pin under the
-  maintained API fork. Release assets remain unpublished; installation is gated
-  on verifying the actual published bytes and subsequent isolated HAOS rehearsal.
+- Use a versioned HTTPS API-wheel requirement with a SHA256 pin under the
+  maintained API fork. HAOS installation still requires an isolated rehearsal.
 
 Independent Apache-2.0 continuation; not an upstream release or production-ready.
 
@@ -35,11 +34,6 @@ Independent Apache-2.0 continuation; not an upstream release or production-ready
   22 tests pass on HA 2026.9.3 / Python 3.14.6 with the packaged API candidate.
   This is mocked local validation, not HAOS or hardware verification.
 
-Implementation: [e378176](https://github.com/Rogash1/owlet/commit/e378176),
-[81cefce](https://github.com/Rogash1/owlet/commit/81cefce),
-[5c1de99](https://github.com/Rogash1/owlet/commit/5c1de99),
-[894266c](https://github.com/Rogash1/owlet/commit/894266c),
-[ae26738](https://github.com/Rogash1/owlet/commit/ae26738).
 Original release history follows unchanged.
 
 ## 2025.4.3 (2025-04-15)
