@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## 2026.9.20rc2 — experimental prerelease
+
+- Depend on the published pyowletapi rc2 wheel using its versioned HTTPS URL and SHA256.
+- Use hassfest-compatible requirement formatting and validate metadata, HACS and offline regressions in CI.
+- Distribute tracked public component files, concise documentation and attribution only.
+- Existing migration/runtime behavior is unchanged. HAOS and live hardware remain unverified.
+
 ## 2026.9.20rc1 — experimental prerelease
 
 - Use a versioned HTTPS API-wheel requirement with a SHA256 pin under the

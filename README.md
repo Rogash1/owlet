@@ -44,7 +44,7 @@ and `owlet-ha` checkouts. From this repository:
 ```sh
 uv venv .venv-target --python 3.14.6
 uv pip install --python .venv-target/bin/python -r requirements-test-target.lock
-uv pip install --python .venv-target/bin/python --reinstall --no-deps ../pyowletapi/dist/pyowletapi-2026.9.20rc1-py3-none-any.whl
+uv pip install --python .venv-target/bin/python --reinstall --no-deps ../pyowletapi/dist/pyowletapi-2026.9.20rc2-py3-none-any.whl
 PYTHONPATH=. .venv-target/bin/python -m pytest -c pytest.ini tests/test_maintenance.py -q --timeout=20
 python3 scripts/build_release.py
 ```
