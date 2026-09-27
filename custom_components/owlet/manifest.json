@@ -9,7 +9,7 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Rogash1/owlet/issues",
   "requirements": [
-    "pyowletapi @ https://github.com/Rogash1/pyowletapi/releases/download/2026.9.20rc1/pyowletapi-2026.9.20rc1-py3-none-any.whl#sha256=2e89c58206a141dff32e3169e7458e7090430363d1756eafc8afc3a6908cb7f3"
+    "pyowletapi@https://github.com/Rogash1/pyowletapi/releases/download/2026.9.20rc1/pyowletapi-2026.9.20rc1-py3-none-any.whl#sha256=2e89c58206a141dff32e3169e7458e7090430363d1756eafc8afc3a6908cb7f3"
   ],
   "version": "2026.9.20rc1"
 }

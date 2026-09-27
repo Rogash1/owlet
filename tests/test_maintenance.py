@@ -204,7 +204,9 @@ async def test_manifest_matches_installed_candidate():
     from urllib.parse import urlsplit, parse_qs
     import re
     assert len(manifest['requirements']) == 1
-    requirement = Requirement(manifest['requirements'][0])
+    raw_requirement = manifest['requirements'][0]
+    assert not any(char.isspace() for char in raw_requirement)
+    requirement = Requirement(raw_requirement)
     installed = version('pyowletapi')
     assert requirement.name == 'pyowletapi'
     assert manifest['version'] == installed

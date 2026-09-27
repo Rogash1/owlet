@@ -76,3 +76,13 @@ Ryan Clark and upstream contributors created this integration. [NOTICE](NOTICE)
 and [CHANGELOG.md](CHANGELOG.md) retain adapted contributions and upstream releases.
 Use [issues](https://github.com/Rogash1/owlet/issues) for bugs and
 [SECURITY.md](SECURITY.md) for private vulnerability reporting.
+
+## Continuous integration
+
+Run `python3 scripts/validate_metadata.py` before committing manifest changes.
+It rejects requirement whitespace and checks the versioned HTTPS dependency pin.
+Use `--check-github` to also check Issues, topics and the issue-tracker URL against
+the public repository settings (optional `GITHUB_TOKEN` for API rate limits).
+Actions runs this check, hassfest, HACS and the offline HA regressions. HACS uses
+the existing Home Assistant brands entry when no local brand asset is present;
+no third-party logo is copied into this repository.
